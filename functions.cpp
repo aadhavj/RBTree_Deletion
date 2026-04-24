@@ -2,7 +2,13 @@
 #include <string>
 #include <fstream>
 using namespace std;
-struct node;
+struct node{
+	node* parent = nullptr;
+	node* left = nullptr;
+	node* right = nullptr;
+	char color = 'R';
+	int value;
+};
 void printTree(node*, int);
 void addNode(node* &, node* &, node* &);
 void update(node*&, node*);
