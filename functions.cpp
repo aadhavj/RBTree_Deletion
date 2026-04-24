@@ -2,6 +2,7 @@
 #include <string>
 #include <fstream>
 using namespace std;
+struct node;
 void printTree(node*, int);
 void addNode(node* &, node* &, node* &);
 void update(node*&, node*);
