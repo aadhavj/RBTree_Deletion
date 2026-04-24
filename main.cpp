@@ -2,15 +2,6 @@
 #include <string>
 #include <fstream>
 using namespace std;
-
-//Important node structure
-struct node{
-	node* parent = nullptr;
-	node* left = nullptr;
-	node* right = nullptr;
-	char color = 'R';
-	int value;
-};
 #include "functions.cpp"
 
 //Function prototypes
