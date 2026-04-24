@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 #include <fstream>
-#include "functions.cpp"
 using namespace std;
 
 //Important node structure
@@ -12,6 +11,7 @@ struct node{
 	char color = 'R';
 	int value;
 };
+#include "functions.cpp"
 
 //Function prototypes
 node* returnSuccessor(node*);
