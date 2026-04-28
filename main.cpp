@@ -2,13 +2,17 @@
 #include <string>
 #include <fstream>
 using namespace std;
-#include "functions.cpp"
+#include "functions.h"
 
 //Function prototypes
 node* returnSuccessor(node*);
 void deleteNode(node* &, int);
 void replaceNode(node*, node*);
 node* doesExist(node*, int);
+node* getSibling(node*);
+node* getFarNephew(node*);
+node* getNearNephew(node*);
+void deleteRecolor(int, node*, node*, node*&);
 
 int main(){
 
@@ -137,8 +141,39 @@ node* doesExist(node* current, int value){
 	}
 }
 
+node* getSibling(node* current){
+	if (current->parent->left != current){
+		return current->parent->left;
+	}
+	else{
+		return current->parent->right;
+	}
+}
+
+node* getFarNephew(node* current){
+	node* sibling = getSibling(current);
+	if (current->parent->right == sibling){
+		return sibling->right;
+	}
+	else if (current->parent->left == sibling){
+		return sibling->left;
+	}
+}
+
+node* getNearNephew(node* current){
+	node* sibling = getSibling(current);
+	if (current->parent->right == sibling){
+		return sibling->left;
+	}
+	else if (current->parent->left == sibling){
+		return sibling->right;
+	}
+}
+
+
 void deleteNode(node* &root, int value){
 	node* deleteMe = doesExist(root,value);
+
 	if (deleteMe != nullptr){
 		//No child case
 		if (deleteMe->left == nullptr && deleteMe->right == nullptr){
@@ -206,3 +241,32 @@ void deleteNode(node* &root, int value){
 		delete deleteMe;
 	}
 }
+
+void deleteRecolor(int numOfChildren, node* deleteMe, node* successor, node*& root){
+	if (numOfChildren == 1){
+		
+		//Double black case
+		if (deleteMe->color == 'B' && (successor == nullptr || successor->color == 'B')){
+			successor->color = 'b';
+			while (successor == 'b' && successor != root){
+				node* sibling = getSibling(successor);
+				if (sibling->color == 'R' and ((sibling->left && sibling->left->color == 'R') || (sibling->right && sibling->right->color == 'R'))){
+					node* redChild = getFarNephew(successor);
+					//LL case
+					if (sibling == sibling->parent->left && (sibling->left == redChild || (sibling->left->color == 'R' && sibling->right->color == 'R'))){
+						root = rotateLeft(sibling->parent);
+
+					}		
+				}
+			}
+			if (successor == root){
+				successor->color = 'B';
+			}
+		}
+		//Red-black case
+		else if ((deleteMe->color == 'R' && successor->color == 'B') || (deleteMe->color == 'B' && successor->color == 'R')){
+			successor->color = 'B';
+		}
+	}
+}
+
