@@ -174,13 +174,13 @@ node* getNearNephew(node* current){
 
 void deleteNode(node* &root, int value){
 	node* deleteMe = doesExist(root,value);
-
+	
 	if (deleteMe != nullptr){
 		//No child case
-		deleteUpdate(deleteMe, returnSuccessor(deleteMe), root);
 		if (deleteMe->left == nullptr && deleteMe->right == nullptr){
 			if (deleteMe->parent != nullptr){
 				replaceNode(deleteMe, nullptr);
+				deleteUpdate(deleteMe, returnSuccessor(deleteMe), root);
 			}
 			else{
 				root = nullptr;
@@ -196,6 +196,7 @@ void deleteNode(node* &root, int value){
 			else{
 				root = successor;
 			}
+			deleteUpdate(deleteMe, successor, root);
 		}
 		else if (deleteMe->left == nullptr){
 			node* successor = deleteMe->right;
@@ -206,6 +207,7 @@ void deleteNode(node* &root, int value){
 			else{
 				root = successor;
 			}
+			deleteUpdate(deleteMe, successor, root);
 		}
 		//Two child case
 		else{
@@ -239,6 +241,7 @@ void deleteNode(node* &root, int value){
 			else{
 				root = successor;
 			}
+			deleteUpdate(deleteMe, successor, root);
 		}
 		delete deleteMe;
 	}
@@ -247,20 +250,32 @@ void deleteRecolor(node*& root, node* parent, node* sibling, node* successor){
 	sibling->color = 'R';
 	if (parent->color == 'R'){
 		parent->color = 'B';
+		successor->color = 'B'; //just added
 	}
 	else{
 		if (parent != root){
 			parent->color = 'b';
+			successor->color = 'B'; //just added
 			deleteRecolor(root, parent->parent, getSibling(parent), parent);
+		}
+		else{
+			successor->color = 'B';
 		}
 	}	
 }
 void deleteUpdate(node* deleteMe, node* successor, node*& root){
+	if (!successor) {successor = new node(); successor->color = 'B'; successor->parent = deleteMe;}
 	//Double black case
 	if (deleteMe->color == 'B' && (successor == nullptr || successor->color == 'B')){
 		successor->color = 'b';
 		while (successor->color == 'b' && successor != root){
 			node* sibling = getSibling(successor);
+			if (!sibling){
+				sibling = new node();
+				sibling->parent = deleteMe;
+				sibling->color = 'B';
+			}
+
 			if (sibling->color == 'B' and ((sibling->left && sibling->left->color == 'R') || (sibling->right && sibling->right->color == 'R'))){
 				node* redChild = getFarNephew(successor);
 				//LL case
@@ -300,7 +315,7 @@ void deleteUpdate(node* deleteMe, node* successor, node*& root){
 		}
 	}
 	//Red-black case
-	else if ((deleteMe->color == 'R' && successor->color == 'B') || (deleteMe->color == 'B' && successor->color == 'R')){
+	else if ((deleteMe->color == 'R' && (successor || successor->color == 'B')) || (deleteMe->color == 'B' && (successor && successor->color == 'R'))){
 		successor->color = 'B';
 	}
 }
