@@ -6,7 +6,7 @@ using namespace std;
 
 //Function prototypes
 node* returnSuccessor(node*);
-void deleteNode(node* &, int);
+void deleteNode(node* &, node*);
 void replaceNode(node*, node*);
 node* doesExist(node*, int);
 node* getSibling(node*);
@@ -70,7 +70,7 @@ int main(){
 			node* searchedNode = doesExist(root, value);
 			if (!searchedNode){cout << "Cannot delete nonexistent node." << endl;}
 			else{
-				deleteNode(root, value);
+				deleteNode(root, searchedNode);
 			}
 		}
 		else if (command == "SEARCH"){ //searches if a node exists in tree
@@ -172,15 +172,15 @@ node* getNearNephew(node* current){
 }
 
 
-void deleteNode(node* &root, int value){
-	node* deleteMe = doesExist(root,value);
+void deleteNode(node* &root, node* searchedNode){
+	node* deleteMe = searchedNode;
 	
 	if (deleteMe != nullptr){
 		//No child case
 		if (deleteMe->left == nullptr && deleteMe->right == nullptr){
 			if (deleteMe->parent != nullptr){
-				replaceNode(deleteMe, nullptr);
 				deleteUpdate(deleteMe, returnSuccessor(deleteMe), root);
+				replaceNode(deleteMe, nullptr);
 			}
 			else{
 				root = nullptr;
@@ -211,19 +211,24 @@ void deleteNode(node* &root, int value){
 		}
 		//Two child case
 		else{
+			
 			//Get successor
 			node* successor = returnSuccessor(deleteMe);
+			
+			deleteMe->value = successor->value;
 
-			//Set successor's parent to not recognize child
-			replaceNode(successor, nullptr);
+			deleteNode(root, successor);
 
+			/*			
 			//If there are right nodes of successor, make the right node take successor's place
 			if (successor->right != nullptr){
 				replaceNode(successor, successor->right);
 				successor->right->parent = successor->parent;
 				successor->right = nullptr;
 			}
-
+			*/
+			
+			/*
 			//Put successor into place of current in tree
 			successor->parent = deleteMe->parent;
 			successor->left = deleteMe->left;
@@ -241,9 +246,14 @@ void deleteNode(node* &root, int value){
 			else{
 				root = successor;
 			}
-			deleteUpdate(deleteMe, successor, root);
+			*/
+			//deleteUpdate(successor, deleteMe, root);
+			cout << "BP HERE" << endl;
+			//replaceNode(successor, nullptr); //added
+			
+
 		}
-		delete deleteMe;
+		//delete deleteMe;
 	}
 }
 void deleteRecolor(node*& root, node* parent, node* sibling, node* successor){
@@ -265,6 +275,7 @@ void deleteRecolor(node*& root, node* parent, node* sibling, node* successor){
 }
 void deleteUpdate(node* deleteMe, node* successor, node*& root){
 	if (!successor) {successor = new node(); successor->color = 'B'; successor->parent = deleteMe;}
+	
 	//Double black case
 	if (deleteMe->color == 'B' && (successor == nullptr || successor->color == 'B')){
 		successor->color = 'b';
