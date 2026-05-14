@@ -182,8 +182,19 @@ void deleteNode(node* &root, node* searchedNode){
 		//No child case
 		if (deleteMe->left == nullptr && deleteMe->right == nullptr){
 			if (deleteMe->parent != nullptr){
-				deleteUpdate(deleteMe, returnSuccessor(deleteMe), root);
-				replaceNode(deleteMe, nullptr);
+				//Create dummy successor node
+				node* successor = new node();
+				successor->color = 'B';
+				successor->parent = deleteMe->parent;
+
+				//Parent now recognizes dummy successor instead of deleteMe
+				replaceNode(deleteMe, successor);
+				
+				//Call update
+				deleteUpdate(deleteMe, successor, root);
+
+				replaceNode(successor, nullptr);
+				delete successor;
 			}
 			else{
 				root = nullptr;
@@ -239,6 +250,7 @@ void deleteNode(node* &root, node* searchedNode){
 		//delete deleteMe;
 	}
 }
+/*
 void deleteRecolor(node*& root, node* parent, node* sibling, node* successor){
 	sibling->color = 'R';
 	if (parent->color == 'R'){
@@ -256,67 +268,128 @@ void deleteRecolor(node*& root, node* parent, node* sibling, node* successor){
 		}
 	}	
 }
+*/
 void deleteUpdate(node* deleteMe, node* successor, node*& root){
-	if (!successor) {successor = new node(); successor->color = 'B'; successor->parent = deleteMe->parent;}
 	
 	//Double black case
-	if (deleteMe->color == 'B' && (successor == nullptr || successor->color == 'B')){
-		cout << "BB case initiatied";
+	if (deleteMe->color == 'B' && (successor == nullptr || successor->color == 'B'))
+	{
+		
+		cout << "BB case initiatied: " << deleteMe->value << " and " << successor->value << " are both black" << endl;
+		
+
 		successor->color = 'b';
 		while (successor->color == 'b' && successor != root){
-			node* sibling = getSibling(deleteMe);
+
+			printTree(root, 0);
+
+			node* sibling = getSibling(successor);
 			if (sibling == nullptr){
 				sibling = new node();
 				sibling->parent = deleteMe;
 				sibling->color = 'B';
 			}
-			cout << "inside while loop";
+			if (sibling->color == 'B'){ //sibling black
+				//Atleast one nephew is red
+				if ((sibling->left && sibling->left->color == 'R') || (sibling->right && sibling->right->color == 'R')){
+					
+					//Get far nephew if exists, else near nephew
+					node* redChild = getFarNephew(deleteMe);
+					if (redChild == nullptr){
+						redChild = getNearNephew(deleteMe);
+					}
 
-			if (sibling->color == 'B' and ((sibling->left && sibling->left->color == 'R') || (sibling->right && sibling->right->color == 'R'))){
-				node* redChild = getFarNephew(deleteMe);
-				if (redChild == nullptr){
-					redChild = getNearNephew(deleteMe);
+					if (redChild == nullptr){
+						cout << "What the heck happened?" << endl;
+					}
+
+					cout << "ROTATIONS STARTED";
+
+					//LL case
+					if (sibling == sibling->parent->left && (sibling->left == redChild || (sibling->left->color == 'R' && sibling->right->color == 'R'))){
+						cout << "Left left performed. Right rotating " << sibling->parent->value << endl;
+
+						sibling->color = sibling->parent->color;
+						sibling->parent->color = 'B';
+						redChild->color = 'B';
+						
+						root = rotateLeft(sibling->parent);
+
+						successor->color = 'B';
+
+						root = rotateRight(sibling->parent);
+
+					}
+					//LR case
+					else if (sibling == sibling->parent->left && sibling->right == redChild){
+						
+						cout << "Left right performed. Left rotating " << sibling->value << " Right rotating " << successor->parent->value << endl;
+						
+						sibling->color = 'R';
+						redChild->color = 'B';
+
+						root = rotateLeft(sibling);
+						root = rotateRight(successor->parent);
+					}
+					//RR case (Reached this line w/ case)
+					else if (sibling == sibling->parent->right && (sibling->right == redChild || (sibling->left->color == 'R' && sibling->right->color == 'R'))){
+						cout << "Right Right performed. Left rotating " << sibling->parent->value << endl;
+						
+						sibling->color = sibling->parent->color;
+						sibling->parent->color = 'B';
+						redChild->color = 'B';
+						
+						root = rotateLeft(sibling->parent);
+
+						successor->color = 'B';
+					}
+					//RL case
+					else if (sibling->parent->right == sibling && sibling->left == redChild){
+						
+						cout << "Right Left performed. Right rotating " << sibling->value << " and left rotating " << successor->parent->value << endl;
+						sibling->color = 'R';
+						redChild->color = 'B';
+
+						root = rotateRight(sibling);
+						root = rotateLeft(successor->parent);
+					}
+					else{
+						cout << "Not executed" << endl;
+					}
+					
+					cout << "Rotations completed" << endl;
+				} 
+				//Both nephews are black
+				else if ((!sibling->left || sibling->left->color == 'B') && (!sibling->right || sibling->right->color == 'B')){
+					cout << "Both nephews are black" << endl;
+
+					//Recoloring, push up blackness
+					sibling->color = 'R';
+					if (sibling->parent->color == 'R'){
+						sibling->parent->color = 'B';
+						successor->color = 'B';
+					}
+					else{
+						sibling->parent->color = 'b';
+						successor = sibling->parent;
+					}
+					//deleteRecolor(root, successor->parent, sibling, successor); //Recolors tree
 				}
-				cout << "ROTATIONS STARTED";
-				//LL case
-				if (sibling == sibling->parent->left && (sibling->left == redChild || (sibling->left->color == 'R' && sibling->right->color == 'R'))){
-					root = rotateRight(sibling->parent);
-					cout << "Left left performed";
-				}
-				//LR case
-				else if (sibling == sibling->parent->left && sibling->right == redChild){
-					root = rotateLeft(sibling);
-					root = rotateRight(successor->parent);
-					cout << "Left right performed";
-				}
-				//RR case (Reached this line w/ case)
-				else if (sibling == sibling->parent->right && (sibling->right == redChild || (sibling->left->color == 'R' && sibling->right->color == 'R'))){
-					root = rotateLeft(sibling->parent);
-					cout << "Right Righ performed";
-				}
-				//RL case
-				else if (sibling->parent->right == sibling && sibling->left == redChild){
-					root = rotateRight(sibling);
-					root = rotateLeft(successor->parent);
-					cout << "Right Left performed";
-				}
-				cout << "Rotations completed";
 			}
-			else if (sibling->color == 'B' && ((sibling->left && sibling->left->color == 'B') || !sibling->left) && ((sibling->right && sibling->right->color == 'B') || !sibling->right)){
-				cout << "SIBLING BLACK AND ONE OF CHILDREN BLACK";
-				deleteRecolor(root, successor->parent, sibling, successor); //Recolors tree
-			}
-			else if (sibling->color == 'R'){
-				cout << "SIBLING RED, PERFORMING ROTATIONS";
+			else if (sibling->color == 'R'){ //sibling red
+				
+				cout << "SIBLING RED, PERFORMING ROTATIONS" << endl;
+				
 				if (sibling == sibling->parent->left){
 					root = rotateRight(sibling->parent);
-					cout << "RIGHT ROTATE";
+					cout << "RIGHT ROTATING " << sibling->parent->value << endl;
 				}
 				else if (sibling == sibling->parent->right){
 					root = rotateLeft(sibling->parent);
-					cout << "LEFT ROTATE";
+					cout << "LEFT ROTATING " << sibling->parent->value << endl;
 				}
-				deleteRecolor(root, successor->parent, sibling, successor);
+
+				//deleteRecolor(root, successor->parent, sibling, successor);
 			}
 		}
 		if (successor == root){
