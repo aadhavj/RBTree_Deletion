@@ -1,0 +1,3 @@
+Check to see if this is a valid interpretation of the RBTree, not completely sure as there are no inorder successor simulators that I found.
+Uncomment delete[] commands throughout so no nodes are left unneccessarily in memory.
+Finally, recomment all the code and delete unneccessary stuff prior to submission
