@@ -294,13 +294,14 @@ void deleteUpdate(node* deleteMe, node* successor, node*& root){
 				if ((sibling->left && sibling->left->color == 'R') || (sibling->right && sibling->right->color == 'R')){
 					
 					//Get far nephew if exists, else near nephew
-					node* redChild = getFarNephew(deleteMe);
+					node* redChild = getFarNephew(successor);
 					if (redChild == nullptr){
-						redChild = getNearNephew(deleteMe);
+						redChild = getNearNephew(successor);
 					}
 
 					if (redChild == nullptr){
 						cout << "What the heck happened?" << endl;
+						cout << deleteMe->value << " has no red nephew." << endl;
 					}
 
 					cout << "ROTATIONS STARTED";
@@ -371,6 +372,9 @@ void deleteUpdate(node* deleteMe, node* successor, node*& root){
 					}
 					else{
 						sibling->parent->color = 'b';
+						//successor = sibling->parent;
+						//Added two lines below
+						successor->color = 'B';
 						successor = sibling->parent;
 					}
 					//deleteRecolor(root, successor->parent, sibling, successor); //Recolors tree
