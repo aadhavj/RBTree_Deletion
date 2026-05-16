@@ -244,7 +244,6 @@ void deleteNode(node* &root, node* searchedNode){
 			*/
 			
 			
-			cout << "BP HERE" << endl;
 			
 
 		}
@@ -271,19 +270,22 @@ void deleteUpdate(node* deleteMe, node* successor, node*& root){
 			printTree(root, 0);
 
 			//Create dummy sibling
+			
 			node* sibling = getSibling(successor);
+			/*
 			if (sibling == nullptr){
 				sibling = new node();
 				sibling->parent = successor->parent;
 				sibling->color = 'B';
 			}
+			*/
 
-			cout << "Sibling is " << sibling->value << ", with a successor of " << successor->value << endl;
+			//cout << "Sibling is " << sibling->value << ", with a successor of " << successor->value << endl;
 
-			if (sibling->color == 'B'){ //sibling black
+			if (!sibling || sibling->color == 'B'){ //sibling black
 				
 				//Atleast one nephew is red
-				if ((sibling->left && sibling->left->color == 'R') || (sibling->right && sibling->right->color == 'R')){
+				if(sibling && ((sibling->left && sibling->left->color == 'R') || (sibling->right && sibling->right->color == 'R'))){
 					
 					//Get far nephew if exists, else near nephew
 					node* redChild = getFarNephew(successor);
@@ -333,23 +335,23 @@ void deleteUpdate(node* deleteMe, node* successor, node*& root){
 					cout << "Rotations completed" << endl;
 				} 
 				//Both nephews are black
-				else if ((!sibling->left || sibling->left->color == 'B') && (!sibling->right || sibling->right->color == 'B')){
+				else if (!sibling || ((!sibling->left || sibling->left->color == 'B') && (!sibling->right || sibling->right->color == 'B'))){
 					cout << "Both nephews are black" << endl;
 
 					//Recoloring, push up blackness
-					sibling->color = 'R';
-					if (sibling->parent->color == 'R'){
-						sibling->parent->color = 'B';
+					if (sibling) {sibling->color = 'R';}
+					if (successor->parent->color == 'R'){
+						successor->parent->color = 'B';
 						successor->color = 'B';
 					}
 					else{
-						sibling->parent->color = 'b';
+						successor->parent->color = 'b';
 						successor->color = 'B';
-						successor = sibling->parent;
+						successor = successor->parent;
 					}
 				}
 			}
-			else if (sibling->color == 'R'){ //sibling red
+			else if (sibling && sibling->color == 'R'){ //sibling red
 				
 				cout << "SIBLING RED, PERFORMING ROTATIONS" << endl;
 				
